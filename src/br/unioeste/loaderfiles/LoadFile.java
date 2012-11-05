@@ -161,7 +161,7 @@ public class LoadFile {
 		try{
 			while((linha=arquivo.readLine()) !=null){
 				//Se não for linha vazia
-				if(!(linha.equals("Inicial"))){
+				if(linha.equals("Inicial")){
 					linha = arquivo.readLine();
 					Producao prodInicial = new Producao();
 					prodInicial.setProducao(linha);
@@ -315,6 +315,7 @@ public class LoadFile {
 				}
 			}
 			
+			System.out.println("Simbolo Inicial: " + input.getInicial().getProducao());
 
 		}catch (FileNotFoundException e) {
 			// TODO: handle exception

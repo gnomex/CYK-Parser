@@ -70,9 +70,18 @@ public class CYK {
 	/**
 	 * Algoritmo CYK
 	 * 
+	 * Algoritmo da Roldana
+	 * 	Execução da direita para esquerda
+	 * 	Pivo inicial da linha é o elemento da diagonal principal
+	 * 		Para novo elemento, é pego os NaoTerminais da linha anterior com mesma coluna
+	 * 		e linha anterior com coluna anterior
+	 * 		Concatena nao terminais gerando produçoes
+	 * 	É vereficado quem gera as produçoes
+	 * 	O novo elemento recebe os Nao terminais geradores
+	 * 
 	 * */
 
-	public boolean cykParser(){
+	public boolean cykParser() throws Exception{
 
 		try {
 			inicializaEstadosMatriz();
@@ -86,34 +95,39 @@ public class CYK {
 
 			int diagonalPrincipal = (tamMatriz -2);
 
-			int linhaatual;
+			int linhaAnterior;
+			int linhaAtual;
 			int coluna;
 			int colunaAnt;
-			
-			for(;diagonalPrincipal >= 0; diagonalPrincipal --){
-				
-				linhaatual=diagonalPrincipal + 1; //Linha Anterior
-				
+
+			for(;diagonalPrincipal >= 0; diagonalPrincipal--){
+
+				linhaAnterior=diagonalPrincipal + 1; //Linha Anterior
+				linhaAtual=diagonalPrincipal;
+				System.out.println("Diagonal Principal: " +diagonalPrincipal);
+				System.out.println("Linha A ser Processada: " +linhaAnterior );
+
 				//Percorre colunas da linha da vez e processa a Roldana
-				for(int davez = diagonalPrincipal ;davez > 0; davez--){
-					
-					
+				for(int davez = diagonalPrincipal ;davez >= 0; davez--){
+
 					coluna=davez; //Coluna da roldana
 					colunaAnt = coluna +1;
-					
+
+					System.out.println("Coluna ser Processada: " +coluna + "Coluna Ant: " + colunaAnt );
+
+
 					ArrayList<Producao> paraconcat = new ArrayList<Producao>();
-					
+
 					//Concatena
-					paraconcat = concatenaProducoes(matrizprocessamento[linhaatual][coluna],
-							matrizprocessamento[linhaatual][colunaAnt]);
-					
+					paraconcat = concatenaProducoes(matrizprocessamento[linhaAnterior][coluna],
+							matrizprocessamento[linhaAnterior][colunaAnt]);
+
 					//Remove produções duplicadas
 					paraconcat = removeProducoesDuplicadas(paraconcat);
-					
-					
+
 					ProducoesForParser roldana = new ProducoesForParser();
 					ArrayList<NaoTerminal> nTroldana = new ArrayList<NaoTerminal>();
-					
+
 					//quemgera as produções
 					for(Producao np : paraconcat){
 						ProducoesForParser aux = new ProducoesForParser();
@@ -123,24 +137,42 @@ public class CYK {
 					//Remove NaoTerminais duplicados
 					nTroldana = removeNaoTerminaisDuplicados(nTroldana);
 					roldana.setProducoes(nTroldana);
-					
+
 					//seta resultado da roldana	
-					
-					matrizprocessamento[(linhaatual - 1)][davez] = new ProducoesForParser();
-					matrizprocessamento[(linhaatual - 1)][davez] = roldana;
-					
+
+					matrizprocessamento[(linhaAtual)][davez] = new ProducoesForParser();
+					matrizprocessamento[(linhaAtual)][davez] = roldana;
+
 				}	
 
 			}
+
 			//Lógica a ser implementada ainda
-			if(matrizprocessamento[0][0].getProducoes() == inicial){
-				return true;
-			}else{
-				return false;
+
+			/*	Verifica se Estado inicial está no topo da matriz diagonal
+			 * 
+			 * */
+
+			ProducoesForParser test = new ProducoesForParser();
+			test = matrizprocessamento[0][0]; //Elemento topo da matriz
+	
+			//Se contiver elementos, procura inicial			
+			if(!test.getProducoes().isEmpty()){
+				//Pesquisa inicial
+				for(NaoTerminal testB : test.getProducoes()){
+					if(testB.getNaoTerminais().equals(inicial.getProducao())){
+						return true;
+					}
+				}	
 			}
+			//Se não encontrou
+			return false;
+
 
 		}catch (Exception e) {
 			// TODO: handle exception
+			e.printStackTrace();
+			throw new Exception("Erro: Algoritmo nao funcionou como deveria");
 		}
 
 
@@ -281,7 +313,7 @@ public class CYK {
 	}
 
 	public ArrayList<NaoTerminal> removeNaoTerminaisDuplicados(ArrayList<NaoTerminal> nterminais) throws Exception{
-		
+
 		try{
 			ArrayList<NaoTerminal> prodSemDuplas = new ArrayList<NaoTerminal>();
 
@@ -315,8 +347,8 @@ public class CYK {
 			// TODO: handle exception
 			throw new Exception("Erro: nao foi possivel remover duplicados");
 		}
-		
-		
+
+
 	}
 
 	/*	Carrega dados do arquivo
@@ -341,12 +373,27 @@ public class CYK {
 
 	public void imprimeParaTeste(){
 
-		for(int i=0; i<tamMatriz; i++){
-			for(int j=0; j<tamMatriz; j++){
-				System.out.println("M["+i+","+j+"]" + matrizprocessamento[i][j]);
-			}
-		}
+		try{
+			
+			System.out.println("Simbolo Inicial : "+ inicial.getProducao());
+			
+			for(int i=0; i<tamMatriz; i++){
+				for(int j=0; j<tamMatriz; j++){
+					if(matrizprocessamento[i][j] != null){
+						System.out.println("M["+i+","+j+"] \n  {" ); //+ matrizprocessamento[i][j]
 
+						for(NaoTerminal nt : matrizprocessamento[i][j].getProducoes()){
+							System.out.println(nt.getNaoTerminais());
+						}
+						System.out.println("}" );
+					}
+				}
+			}
+
+		}catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
 	}
 
 	public static void main(String[] args){
@@ -359,15 +406,63 @@ public class CYK {
 			testeEntrada.add("a");
 			testeEntrada.add("b");
 
+
 			CYK cyk = new CYK(testeEntrada);
+			cyk.loadEstadosFromFile();
+
+			for(Estado et : cyk.getEstados()){
+				System.out.println("Terminal: " + et.getEstado().getNaoTerminais());
+				for(Producao pt : et.getProducoes()){
+					System.out.println(" ->" + pt.getProducao());
+				}
+			}
+
 
 			if(cyk.cykParser()){
 				cyk.imprimeParaTeste();
+				System.out.println("Funfo");
+			}else{
+				cyk.imprimeParaTeste();
+				System.out.println("\n## Nao Funfo");
 			}
+
 
 		}catch (Exception e) {
 			// TODO: handle exception
 		}
 	}
+
+
+	/**
+	 * ========================================================================
+	 * */
+
+
+	public ProducoesForParser[][] getMatrizprocessamento() {
+		return matrizprocessamento;
+	}
+
+	public int getTamMatriz() {
+		return tamMatriz;
+	}
+
+	public Producao getInicial() {
+		return inicial;
+	}
+
+	public ArrayList<String> getCadeiaEntrada() {
+		return cadeiaEntrada;
+	}
+
+	public ArrayList<Estado> getEstados() {
+		return estados;
+	}
+
+	public Boolean getCadeiaAceita() {
+		return cadeiaAceita;
+	}
+
+
+
 
 }
