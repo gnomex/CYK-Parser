@@ -2,19 +2,17 @@ package br.unioeste.cyk.parser;
 
 import java.util.ArrayList;
 
-import oracle.jrockit.jfr.tools.ConCatRepository;
-
 import br.unioeste.exceptions.CYKParserCadeiaEntradaError;
 import br.unioeste.grammar.NaoTerminal;
 import br.unioeste.loaderfiles.LoadFile;
 
 public class CYK {
 
-	private ProducoesForParser[][] matrizprocessamento;
+	private ProducoesForParser[][] matrizprocessamento; //Matriz para processamento do Algoritmo CYK
 
-	private int tamMatriz; 
+	private int tamMatriz; //Tamanho da matriz. A matriz é uma matriz Quadrada
 
-	private Producao inicial;
+	private Producao inicial; //Simbolo inicial
 
 	private ArrayList<String> cadeiaEntrada; //Alfabeto de entrada para teste de aceitação
 
@@ -22,7 +20,10 @@ public class CYK {
 
 	private Boolean cadeiaAceita; //Entrada reconhecida ou nao ?
 
-
+	/*
+	 * Construtor
+	 * 	Recebe como parametro a cadeia de entrada para teste
+	 * */
 
 	public CYK(ArrayList<String> cadeiaAlfabetoEntrada) throws Exception{
 
@@ -41,6 +42,11 @@ public class CYK {
 		inicial = new Producao();
 		estados = new ArrayList<Estado>();
 	}
+
+
+	/*	Inicializa a matriz de processamento
+	 *		Faz a leitura da cadeia de entrada e seta na ultima linha da matriz seus geradores(se existirem) 
+	 * */
 
 	public void inicializaEstadosMatriz() throws Exception{
 		//Indices da matriz
@@ -81,10 +87,10 @@ public class CYK {
 	 * 
 	 * */
 
-	public boolean cykParser() throws Exception{
+	public void cykParser() throws Exception{
 
 		try {
-			inicializaEstadosMatriz();
+			inicializaEstadosMatriz(); //É preciso matriz estar previamente inicializada
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -93,38 +99,46 @@ public class CYK {
 
 		try{
 
-			int diagonalPrincipal = (tamMatriz -2);
+			int diagonalPrincipal = (tamMatriz -2); //Começa na penultima linha da matriz, pois a ultima já é previamente inicializada
 
-			int linhaAnterior;
-			int linhaAtual;
-			int coluna;
-			int colunaAnt;
+			int linhaAnterior; //Linha Anterior
+			int linhaAtual;	//Linha Atual
+			int coluna;	//Coluna Atual
+			int colunaAnt;	//Coluna Anterior
+
+			/*	Inicio do algoritmo roldana
+			 * 		Tem como pivo de referencia a diagonal principal
+			 * */
 
 			for(;diagonalPrincipal >= 0; diagonalPrincipal--){
 
 				linhaAnterior=diagonalPrincipal + 1; //Linha Anterior
-				linhaAtual=diagonalPrincipal;
-				System.out.println("Diagonal Principal: " +diagonalPrincipal);
-				System.out.println("Linha A ser Processada: " +linhaAnterior );
+				linhaAtual=diagonalPrincipal; //Linha atual
+
+				//System.out.println("Diagonal Principal: " +diagonalPrincipal);
+				//System.out.println("Linha A ser Processada: " +linhaAnterior );
 
 				//Percorre colunas da linha da vez e processa a Roldana
 				for(int davez = diagonalPrincipal ;davez >= 0; davez--){
 
 					coluna=davez; //Coluna da roldana
-					colunaAnt = coluna +1;
+					colunaAnt = coluna +1; //Coluna anterior
 
-					System.out.println("Coluna ser Processada: " +coluna + "Coluna Ant: " + colunaAnt );
+					//System.out.println("Coluna ser Processada: " +coluna + "Coluna Ant: " + colunaAnt );
 
-
+					//Array temporario para concatenar produçoes
 					ArrayList<Producao> paraconcat = new ArrayList<Producao>();
 
-					//Concatena
+					//Concatena Produçoes
 					paraconcat = concatenaProducoes(matrizprocessamento[linhaAnterior][coluna],
 							matrizprocessamento[linhaAnterior][colunaAnt]);
 
 					//Remove produções duplicadas
 					paraconcat = removeProducoesDuplicadas(paraconcat);
 
+
+					//Varivel que recebe resultado do processamento
+					//Elemento que vai ser setado na matriz
 					ProducoesForParser roldana = new ProducoesForParser();
 					ArrayList<NaoTerminal> nTroldana = new ArrayList<NaoTerminal>();
 
@@ -138,8 +152,7 @@ public class CYK {
 					nTroldana = removeNaoTerminaisDuplicados(nTroldana);
 					roldana.setProducoes(nTroldana);
 
-					//seta resultado da roldana	
-
+					//seta resultado da roldana
 					matrizprocessamento[(linhaAtual)][davez] = new ProducoesForParser();
 					matrizprocessamento[(linhaAtual)][davez] = roldana;
 
@@ -147,33 +160,33 @@ public class CYK {
 
 			}
 
-			//Lógica a ser implementada ainda
-
-			/*	Verifica se Estado inicial está no topo da matriz diagonal
-			 * 
-			 * */
-
-			ProducoesForParser test = new ProducoesForParser();
-			test = matrizprocessamento[0][0]; //Elemento topo da matriz
-	
-			//Se contiver elementos, procura inicial			
-			if(!test.getProducoes().isEmpty()){
-				//Pesquisa inicial
-				for(NaoTerminal testB : test.getProducoes()){
-					if(testB.getNaoTerminais().equals(inicial.getProducao())){
-						return true;
-					}
-				}	
-			}
-			//Se não encontrou
-			return false;
-
-
 		}catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
 			throw new Exception("Erro: Algoritmo nao funcionou como deveria");
 		}
+	}
+
+	public Boolean cadeiaFoiAceita(){
+
+		/*	Verifica se Estado inicial está no topo da matriz diagonal
+		 * 
+		 * */
+
+		ProducoesForParser test = new ProducoesForParser();
+		test = matrizprocessamento[0][0]; //Elemento topo da matriz
+
+		//Se contiver elementos, procura inicial			
+		if(!test.getProducoes().isEmpty()){
+			//Pesquisa inicial
+			for(NaoTerminal testB : test.getProducoes()){
+				if(testB.getNaoTerminais().equals(inicial.getProducao())){
+					return true;
+				}
+			}	
+		}
+		//Se não encontrou
+		return false;
 
 
 	}
@@ -353,10 +366,10 @@ public class CYK {
 
 	/*	Carrega dados do arquivo
 	 * */
-	public void loadEstadosFromFile(){
+	private void loadEstadosFromFile(String filename){
 
 		try {
-			LoadFile lf = new LoadFile("entrada.txt");
+			LoadFile lf = new LoadFile(filename);
 			lf.carregarRecursos();
 
 			this.estados = lf.getEstados();
@@ -374,9 +387,9 @@ public class CYK {
 	public void imprimeParaTeste(){
 
 		try{
-			
+
 			System.out.println("Simbolo Inicial : "+ inicial.getProducao());
-			
+
 			for(int i=0; i<tamMatriz; i++){
 				for(int j=0; j<tamMatriz; j++){
 					if(matrizprocessamento[i][j] != null){
@@ -408,7 +421,7 @@ public class CYK {
 
 
 			CYK cyk = new CYK(testeEntrada);
-			cyk.loadEstadosFromFile();
+			cyk.loadEstadosFromFile("entrada.txt");
 
 			for(Estado et : cyk.getEstados()){
 				System.out.println("Terminal: " + et.getEstado().getNaoTerminais());
@@ -417,12 +430,15 @@ public class CYK {
 				}
 			}
 
+			cyk.cykParser();
 
-			if(cyk.cykParser()){
-				cyk.imprimeParaTeste();
-				System.out.println("Funfo");
+			cyk.imprimeParaTeste();
+
+			if(cyk.cadeiaFoiAceita()){
+
+				System.out.println("\n## Funfo");
 			}else{
-				cyk.imprimeParaTeste();
+
 				System.out.println("\n## Nao Funfo");
 			}
 
@@ -462,7 +478,15 @@ public class CYK {
 		return cadeiaAceita;
 	}
 
+	public void setInicial(Producao inicial) {
+		this.inicial = inicial;
+	}
 
+	public void setEstados(ArrayList<Estado> estados) {
+		this.estados = estados;
+	}
+
+	
 
 
 }
