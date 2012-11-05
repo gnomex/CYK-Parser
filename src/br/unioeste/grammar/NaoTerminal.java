@@ -4,6 +4,16 @@ import java.util.ArrayList;
 
 public class NaoTerminal {
 
-	ArrayList<String> naoTerminais;
+	private String naoTerminais;
+
+	public String getNaoTerminais() {
+		return naoTerminais;
+	}
+
+	public void setNaoTerminais(String naoTerminais) {
+		this.naoTerminais = naoTerminais;
+	}
+	
+	
 		
 }

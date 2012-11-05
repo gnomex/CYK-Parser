@@ -1,9 +1,17 @@
 package br.unioeste.grammar;
 
-import java.util.ArrayList;
-
 public class Terminal {
 
-	ArrayList<String> terminais;
+	private String terminais;
+
+	public String getTerminal() {
+		return terminais;
+	}
+
+	public void setTerminal(String terminais) {
+		this.terminais = terminais;
+	}
+	
+	
 	
 }
