@@ -12,14 +12,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JTextArea;
 import javax.swing.JScrollPane;
 import javax.swing.JList;
 
@@ -42,6 +40,8 @@ public class CYKParserGUI extends JFrame implements ActionListener{
 	private JButton btnSalvar;
 	private JButton btnExecutarTeste;
 	private JButton btnInserirCadeiaDe;
+	private JButton btnLimpar;
+	
 	private JLabel lblGramtica;
 	private JLabel lblProcessamento;
 
@@ -49,7 +49,6 @@ public class CYKParserGUI extends JFrame implements ActionListener{
 	private DefaultListModel<String> listGramatica;
 
 	private String currentFile;
-	private JButton btnLimpar;
 
 	private ArrayList<String> cadeiaEntrada = new ArrayList<String>();
 
@@ -104,15 +103,15 @@ public class CYKParserGUI extends JFrame implements ActionListener{
 		lblGramtica = new JLabel("Gramática");
 		lblGramtica.setBounds(12, 12, 389, 15);
 		panelGramatica.add(lblGramtica);
-		
+
 		listGramatica = new DefaultListModel<String>(); 
-		
+
 		JList<String> list_1 = new JList<String>(listGramatica);
 		list_1.setBounds(22, 39, 379, 494);
 		panelGramatica.add(list_1);
-		
+
 		list_1.setSelectionBackground(Color.ORANGE);
-		
+
 		JScrollPane scrollPane = new JScrollPane(list_1);
 		scrollPane.setBounds(22, 38, 379, 495);
 		panelGramatica.add(scrollPane);
@@ -142,13 +141,15 @@ public class CYKParserGUI extends JFrame implements ActionListener{
 
 		btnInserirCadeiaDe = new JButton("Inserir Cadeia de Teste");
 		btnInserirCadeiaDe.setBounds(332, 12, 208, 37);
+		btnInserirCadeiaDe.setEnabled(false);
 		panelBotoes.add(btnInserirCadeiaDe);
-
+		btnInserirCadeiaDe.addActionListener(this);
+		
 		btnLimpar = new JButton("LIMPAR !");
 		btnLimpar.setBounds(552, 12, 135, 37);
 		panelBotoes.add(btnLimpar);
 		btnLimpar.setEnabled(false);
-		btnInserirCadeiaDe.addActionListener(this);
+		btnLimpar.addActionListener(this);
 
 		JPanel panel = new JPanel();
 		panel.setBorder(new LineBorder(new Color(0, 0, 0)));
@@ -184,13 +185,19 @@ public class CYKParserGUI extends JFrame implements ActionListener{
 			if (res == JFileChooser.APPROVE_OPTION) {
 				File dir = arquivoEntrada.getSelectedFile();
 				currentFile = dir.getPath();
-			}
-			
-			carregaArquivo();
-			
-			btnExecutarTeste.setEnabled(true);
-			btnLimpar.setEnabled(true);
 
+				System.out.println("File: " + currentFile);
+				
+				carregaArquivo();
+
+				btnExecutarTeste.setEnabled(true);
+				btnLimpar.setEnabled(true);
+				btnInserirCadeiaDe.setEnabled(true);
+
+				
+			}else if(res == JFileChooser.CANCEL_OPTION){
+				System.out.println("Cancelado carregamento de arquivo");
+			}
 		}
 
 		if(obj == btnSalvar){
@@ -202,19 +209,23 @@ public class CYKParserGUI extends JFrame implements ActionListener{
 				String entrada;
 				entrada = JOptionPane.showInputDialog(CYKParserGUI.this, "Informe a entrada de teste");
 
-				entrada = entrada.toLowerCase();
-				entrada = entrada.trim();
+				entrada = entrada.toLowerCase();	//Tudo para minusculo
+				entrada = entrada.replaceAll(" ", ""); //Remove espaços em branco
+
+				if(!cadeiaEntrada.isEmpty()){
+					cadeiaEntrada.clear();
+				}
 				
 				String[] castEntrada;
 				castEntrada = entrada.split("");
-				
+
 				for(String str : castEntrada){
 					if(!str.trim().isEmpty()){
 						cadeiaEntrada.add(str);
 					}
 				}
 				listGramatica.addElement("Cadeia de Entrada: " + entrada);
-				
+
 			}catch (Exception e2) {
 				// TODO: handle exception
 				e2.printStackTrace();
@@ -224,9 +235,9 @@ public class CYKParserGUI extends JFrame implements ActionListener{
 		if(obj == btnExecutarTeste){
 
 			try{
-				
+
 				inicializaCYK();
-				
+
 			}catch (Exception e3) {
 				// TODO: handle exception
 				e3.printStackTrace();
@@ -235,34 +246,48 @@ public class CYKParserGUI extends JFrame implements ActionListener{
 
 		}
 		if(obj == btnLimpar){
-			try{
-				listProcessamento.removeAllElements();
-				listGramatica.removeAllElements();
-				cadeiaEntrada.clear();
-				
-				btnExecutarTeste.setEnabled(false);
-				btnSalvar.setEnabled(false);
-				
-			}catch (Exception e4) {
-				// TODO: handle exception
-				e4.printStackTrace();
-			}
+
+
+			limparRecursos();
+
 		}
 	}
+
+	public void limparRecursos(){
+		try{
+			
+			System.out.println("Limpando recursos ...");
+			
+			this.listProcessamento.removeAllElements();
+			this.listGramatica.removeAllElements();
+			cadeiaEntrada.clear();
+
+			btnSalvar.setEnabled(false);
+			btnExecutarTeste.setEnabled(false);
+			btnLimpar.setEnabled(false);
+			btnInserirCadeiaDe.setEnabled(false);
+			
+			System.out.println("Ok !");
+
+		}catch (Exception e) {
+			// TODO: handle exception
+		}
+	}
+
 
 	public void inicializaCYK() throws Exception{
 
 		try{
 
 			if((lf != null) && !(cadeiaEntrada.isEmpty()) ){
-				
+
 				cyk = new CYK(cadeiaEntrada);
 				cyk.setEstados(lf.getEstados());
 				cyk.setInicial(lf.getInicial());
 				cyk.cykParser();
-				
+
 				imprimeProcessamento();
-				
+
 			}else{
 				throw new Exception("Erro: Arquivo entrada inválido");
 			}
@@ -273,13 +298,13 @@ public class CYKParserGUI extends JFrame implements ActionListener{
 		}
 
 	}
-	
+
 	public void imprimeProcessamento(){
 		try{
 			int tamMatriz = cyk.getTamMatriz();
 			ProducoesForParser[][] matriz = new ProducoesForParser[tamMatriz][tamMatriz];
 			matriz = cyk.getMatrizprocessamento();
-		
+
 			listProcessamento.addElement("Linha : Produçoes por coluna");
 			for(int i=0; i<tamMatriz; i++){
 				String linha = i + ": { ";
@@ -295,7 +320,7 @@ public class CYKParserGUI extends JFrame implements ActionListener{
 				linha += "}";
 				listProcessamento.addElement(linha);
 			}
-			
+
 			listProcessamento.addElement("Cadeia Aceita ?");
 			listProcessamento.addElement(" " + cyk.cadeiaFoiAceita());
 
@@ -304,20 +329,22 @@ public class CYKParserGUI extends JFrame implements ActionListener{
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void carregaArquivo(){
 
 		try {
-			lf = new LoadFile(currentFile);
-			lf.carregarRecursos();
-			
-			listGramatica.addElement("Simbolo Inicial: " + lf.getInicial().getProducao());
-			
-			for(Estado est : lf.getEstados()){
-				listGramatica.addElement(est.getEstado().getNaoTerminais());
-				
-				for(Producao pd : est.getProducoes()){
-					listGramatica.addElement(" -> " + pd.getProducao());
+			if(!currentFile.isEmpty()){
+				lf = new LoadFile(currentFile);
+				lf.carregarRecursos();
+
+				listGramatica.addElement("Simbolo Inicial: " + lf.getInicial().getProducao());
+
+				for(Estado est : lf.getEstados()){
+					listGramatica.addElement(est.getEstado().getNaoTerminais());
+
+					for(Producao pd : est.getProducoes()){
+						listGramatica.addElement(" -> " + pd.getProducao());
+					}
 				}
 			}
 

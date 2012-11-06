@@ -20,6 +20,8 @@ public class CYK {
 
 	private Boolean cadeiaAceita; //Entrada reconhecida ou nao ?
 
+	private final String TransacaoVazia = "#";
+
 	/*
 	 * Construtor
 	 * 	Recebe como parametro a cadeia de entrada para teste
@@ -146,8 +148,13 @@ public class CYK {
 					for(Producao np : paraconcat){
 						ProducoesForParser aux = new ProducoesForParser();
 						aux = queGera(np);
-						nTroldana.addAll(aux.getProducoes());						
+						
+						for(NaoTerminal nt : aux.getProducoes()){
+							nTroldana.add(nt);
+						}
 					}
+					
+					
 					//Remove NaoTerminais duplicados
 					nTroldana = removeNaoTerminaisDuplicados(nTroldana);
 					roldana.setProducoes(nTroldana);
@@ -201,6 +208,7 @@ public class CYK {
 		try{
 			//Lista de regras geradoras
 			ArrayList<NaoTerminal> regras = new ArrayList<NaoTerminal>();
+
 			//Pesquisa em todos os estados
 			for(Estado es : estados){
 				ArrayList<Producao> prds = new ArrayList<Producao>();
@@ -215,6 +223,13 @@ public class CYK {
 					}
 				}
 			}
+			//Caso nao tenha gerador
+			if(regras.isEmpty()){
+				NaoTerminal ntgerador = new NaoTerminal();
+				ntgerador.setNaoTerminais(TransacaoVazia);	 //Insere Simbolo Vazio
+				regras.add(ntgerador);
+			}
+
 
 			ProducoesForParser pfp = new ProducoesForParser();
 			pfp.setProducoes(regras);
@@ -228,6 +243,30 @@ public class CYK {
 
 	}
 
+
+	public String concatenaTransacaoVazia(String producao1 , String producao2) throws Exception{
+
+		try{
+			String rmVazia;
+			System.out.println("#p1: "  + producao1 + "  p2: "+ producao2);
+			if(producao1.equals(TransacaoVazia) && producao2.equals(TransacaoVazia)){
+				rmVazia = TransacaoVazia;
+			}else{
+				rmVazia = producao1 + producao2;
+				rmVazia = rmVazia.replaceAll(TransacaoVazia, "");
+				System.out.println("##Sem vazia: " + rmVazia);
+			}
+
+			return rmVazia;
+
+		}catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			throw new Exception("Erro: nao foi possivel remover produção vazia");
+		}
+
+	}
+
 	/*	Concatena produções
 	 */
 
@@ -237,44 +276,55 @@ public class CYK {
 
 			ArrayList<Producao> concatenados = new ArrayList<Producao>();
 
-			if(!(linhaColuna.getProducoes().isEmpty())){//Se linha anterior nao for vazia
-				if(!(LinhaColunaAnt.getProducoes().isEmpty())){//Se linha anterior e coluna anterior Nao for vazia
+			if(!(linhaColuna.getProducoes().isEmpty())  &&  !(LinhaColunaAnt.getProducoes().isEmpty())){//Se ninguem for vazio
+				//Percorre lista de nao terminais da linhacoluna
+				for(NaoTerminal ntLC : linhaColuna.getProducoes()){
+					//Percorre lista de não terminais da Linha ColunaAnterior
+					for(NaoTerminal ntLCAnt : LinhaColunaAnt.getProducoes()){
 
-					for(NaoTerminal ntLC : linhaColuna.getProducoes()){
-						for(NaoTerminal ntLCAnt : LinhaColunaAnt.getProducoes()){
-							Producao prodConcat = new Producao(); //Nao terminais viram produções
+						Producao prodConcat = new Producao();
 
-							String parse = ntLC.getNaoTerminais() + ntLCAnt.getNaoTerminais();
-							parse = parse.trim();
-
-							prodConcat.setProducao(parse);
-							concatenados.add(prodConcat);
-						}
+						String parse;
+						//Concatena Nao terminais
+						parse = concatenaTransacaoVazia(ntLC.getNaoTerminais(), ntLCAnt.getNaoTerminais());
+						//Concatenação vira produção
+						prodConcat.setProducao(parse);
+						concatenados.add(prodConcat);
 					}
-				}else{//Se Linha coluna anterior vazia, somente processa linha anterior
+
+				}
+			}else
+				//Se linhaColuna nao for vazio
+				if(!(linhaColuna.getProducoes().isEmpty())){
+
 					for(NaoTerminal ntLC : linhaColuna.getProducoes()){
 
 						Producao prodConcat = new Producao(); //Nao terminais viram produções
 
-						String parse = ntLC.getNaoTerminais();
-						parse = parse.trim();
+						String parse;
+						parse = concatenaTransacaoVazia(ntLC.getNaoTerminais(), TransacaoVazia);
 
 						prodConcat.setProducao(parse);
 						concatenados.add(prodConcat);
 
 					}
-				}
-			}else if(!(LinhaColunaAnt.getProducoes().isEmpty())){//Se Linha anterior vazia, somente processa linha Coluna anterior
-				for(NaoTerminal ntLCAnt : LinhaColunaAnt.getProducoes()){
-					Producao prodConcat = new Producao(); //Nao terminais viram produções
 
-					String parse =ntLCAnt.getNaoTerminais();
-					parse = parse.trim();
 
-					prodConcat.setProducao(parse);
-					concatenados.add(prodConcat);
-				}
-			}//Se todos vazias, retorna Array vazio!
+				}else
+					//Se linhaColunaAnterior não for vazio
+					if(!(LinhaColunaAnt.getProducoes().isEmpty())){
+
+						for(NaoTerminal ntLCAnt : LinhaColunaAnt.getProducoes()){
+							Producao prodConcat = new Producao(); //Nao terminais viram produções
+
+							String parse;
+
+							parse = concatenaTransacaoVazia(ntLCAnt.getNaoTerminais(), TransacaoVazia);
+
+							prodConcat.setProducao(parse);
+							concatenados.add(prodConcat);
+						}
+					}
 
 			return concatenados;
 
@@ -286,6 +336,10 @@ public class CYK {
 
 	}
 
+	/**
+	 * TODO: BUGFIX
+	 * 	Melhorar Algoritmo 
+	 * */
 	//Remove Produções duplicadas
 	public ArrayList<Producao> removeProducoesDuplicadas(ArrayList<Producao> producoes) throws Exception{
 
@@ -300,12 +354,12 @@ public class CYK {
 						Boolean achou = false; //Flag
 						for(Producao semdupla : prodSemDuplas ){
 							//Se encontrou elemento igual
-							if(semdupla.getProducao().equalsIgnoreCase(testA.getProducao())){
+							if(semdupla.getProducao().equals(testA.getProducao())){
 								achou = true;
 								break;
 							}
 						}
-						if(!achou){//Se nao encontrou elemento 
+						if(!achou){
 							prodSemDuplas.add(testA);
 						}
 
@@ -338,7 +392,7 @@ public class CYK {
 						Boolean achou = false; //Flag
 						for(NaoTerminal semdupla : prodSemDuplas ){
 							//Se encontrou elemento igual
-							if(semdupla.getNaoTerminais().equalsIgnoreCase(testA.getNaoTerminais())){
+							if(semdupla.getNaoTerminais().equals(testA.getNaoTerminais())){
 								achou = true;
 								break;
 							}
@@ -392,7 +446,9 @@ public class CYK {
 
 			for(int i=0; i<tamMatriz; i++){
 				for(int j=0; j<tamMatriz; j++){
+
 					if(matrizprocessamento[i][j] != null){
+
 						System.out.println("M["+i+","+j+"] \n  {" ); //+ matrizprocessamento[i][j]
 
 						for(NaoTerminal nt : matrizprocessamento[i][j].getProducoes()){
@@ -414,14 +470,14 @@ public class CYK {
 
 			ArrayList<String> testeEntrada = new ArrayList<String>();
 			testeEntrada.add("a");
+			testeEntrada.add("a");
 			testeEntrada.add("b");
 			testeEntrada.add("a");
 			testeEntrada.add("a");
-			testeEntrada.add("b");
 
 
 			CYK cyk = new CYK(testeEntrada);
-			cyk.loadEstadosFromFile("entrada.txt");
+			cyk.loadEstadosFromFile("entrada1.txt");
 
 			for(Estado et : cyk.getEstados()){
 				System.out.println("Terminal: " + et.getEstado().getNaoTerminais());
@@ -486,7 +542,7 @@ public class CYK {
 		this.estados = estados;
 	}
 
-	
+
 
 
 }

@@ -1,0 +1,13 @@
+Variáveis
+S,A,B
+Terminais
+a,b
+Produções
+S->A
+S->B
+S->b
+A->a
+B->S
+B->A
+Inicial
+S
