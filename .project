@@ -20,5 +20,10 @@
 			<type>1</type>
 			<location>/home/kenner/HomeWorkGit/CYK-Parser/entrada1.txt</location>
 		</link>
+		<link>
+			<name>saida.txt</name>
+			<type>1</type>
+			<location>/home/kenner/HomeWorkGit/CYK-Parser/saida.txt</location>
+		</link>
 	</linkedResources>
 </projectDescription>

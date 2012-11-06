@@ -7,10 +7,14 @@ import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import java.io.File;
+
 import java.util.ArrayList;
 
 import javax.swing.DefaultListModel;
@@ -27,6 +31,7 @@ import br.unioeste.cyk.parser.Producao;
 import br.unioeste.cyk.parser.ProducoesForParser;
 import br.unioeste.grammar.NaoTerminal;
 import br.unioeste.loaderfiles.LoadFile;
+import br.unioeste.loaderfiles.OutputFile;
 
 public class CYKParserGUI extends JFrame implements ActionListener{
 
@@ -41,7 +46,7 @@ public class CYKParserGUI extends JFrame implements ActionListener{
 	private JButton btnExecutarTeste;
 	private JButton btnInserirCadeiaDe;
 	private JButton btnLimpar;
-	
+
 	private JLabel lblGramtica;
 	private JLabel lblProcessamento;
 
@@ -90,12 +95,13 @@ public class CYKParserGUI extends JFrame implements ActionListener{
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 893, 670);
 		contentPane = new JPanel();
+		contentPane.setBackground(Color.WHITE);
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 
 		JPanel panelGramatica = new JPanel();
-		panelGramatica.setBorder(new LineBorder(new Color(0, 0, 0)));
+		panelGramatica.setBorder(new LineBorder(new Color(0, 0, 0), 1, true));
 		panelGramatica.setBounds(12, 12, 413, 545);
 		contentPane.add(panelGramatica);
 		panelGramatica.setLayout(null);
@@ -117,7 +123,7 @@ public class CYKParserGUI extends JFrame implements ActionListener{
 		panelGramatica.add(scrollPane);
 
 		JPanel panelBotoes = new JPanel();
-		panelBotoes.setBorder(new LineBorder(new Color(0, 0, 0)));
+		panelBotoes.setBorder(new LineBorder(new Color(0, 0, 0), 1, true));
 		panelBotoes.setBounds(12, 569, 865, 61);
 		contentPane.add(panelBotoes);
 		panelBotoes.setLayout(null);
@@ -144,7 +150,7 @@ public class CYKParserGUI extends JFrame implements ActionListener{
 		btnInserirCadeiaDe.setEnabled(false);
 		panelBotoes.add(btnInserirCadeiaDe);
 		btnInserirCadeiaDe.addActionListener(this);
-		
+
 		btnLimpar = new JButton("LIMPAR !");
 		btnLimpar.setBounds(552, 12, 135, 37);
 		panelBotoes.add(btnLimpar);
@@ -152,7 +158,7 @@ public class CYKParserGUI extends JFrame implements ActionListener{
 		btnLimpar.addActionListener(this);
 
 		JPanel panel = new JPanel();
-		panel.setBorder(new LineBorder(new Color(0, 0, 0)));
+		panel.setBorder(new LineBorder(new Color(0, 0, 0), 1, true));
 		panel.setBounds(437, 12, 440, 545);
 		contentPane.add(panel);
 		panel.setLayout(null);
@@ -180,21 +186,26 @@ public class CYKParserGUI extends JFrame implements ActionListener{
 		Object obj = e.getSource();
 		//botao sair
 		if(obj == btnCarregarArquivo){
+
 			JFileChooser arquivoEntrada = new JFileChooser();
+			FileNameExtensionFilter filter = new FileNameExtensionFilter("Text Files", "txt");
+			arquivoEntrada.setFileFilter(filter);
+			arquivoEntrada.addChoosableFileFilter(filter);
+
 			int res = arquivoEntrada.showOpenDialog(null);
 			if (res == JFileChooser.APPROVE_OPTION) {
 				File dir = arquivoEntrada.getSelectedFile();
 				currentFile = dir.getPath();
 
 				System.out.println("File: " + currentFile);
-				
+
 				carregaArquivo();
 
 				btnExecutarTeste.setEnabled(true);
 				btnLimpar.setEnabled(true);
 				btnInserirCadeiaDe.setEnabled(true);
 
-				
+
 			}else if(res == JFileChooser.CANCEL_OPTION){
 				System.out.println("Cancelado carregamento de arquivo");
 			}
@@ -202,6 +213,18 @@ public class CYKParserGUI extends JFrame implements ActionListener{
 
 		if(obj == btnSalvar){
 
+			try{
+
+				OutputFile.gravaArquivoResultados(this.resultadosToList(), "saida.txt");
+
+				JOptionPane.showMessageDialog(CYKParserGUI.this, "Arquivo gravado com sucesso !\n\nArquivo: saida.txt");
+
+				limparRecursos();
+
+			}catch (Exception e5) {
+				// TODO: handle exception
+				e5.printStackTrace();
+			}
 		}
 
 		if(obj == btnInserirCadeiaDe){
@@ -215,7 +238,7 @@ public class CYKParserGUI extends JFrame implements ActionListener{
 				if(!cadeiaEntrada.isEmpty()){
 					cadeiaEntrada.clear();
 				}
-				
+
 				String[] castEntrada;
 				castEntrada = entrada.split("");
 
@@ -237,6 +260,7 @@ public class CYKParserGUI extends JFrame implements ActionListener{
 			try{
 
 				inicializaCYK();
+				btnSalvar.setEnabled(true);
 
 			}catch (Exception e3) {
 				// TODO: handle exception
@@ -255,9 +279,9 @@ public class CYKParserGUI extends JFrame implements ActionListener{
 
 	public void limparRecursos(){
 		try{
-			
+
 			System.out.println("Limpando recursos ...");
-			
+
 			this.listProcessamento.removeAllElements();
 			this.listGramatica.removeAllElements();
 			cadeiaEntrada.clear();
@@ -266,7 +290,7 @@ public class CYKParserGUI extends JFrame implements ActionListener{
 			btnExecutarTeste.setEnabled(false);
 			btnLimpar.setEnabled(false);
 			btnInserirCadeiaDe.setEnabled(false);
-			
+
 			System.out.println("Ok !");
 
 		}catch (Exception e) {
@@ -310,11 +334,11 @@ public class CYKParserGUI extends JFrame implements ActionListener{
 				String linha = i + ": { ";
 				for(int j=0; j<tamMatriz; j++){
 					if(matriz[i][j] != null){
-						String coluna = "";
+						String coluna ="";
 						for(NaoTerminal nt : matriz[i][j].getProducoes()){
 							coluna += nt.getNaoTerminais() + " , ";
 						}
-						linha += " { " + coluna +"}";
+						linha += j+ ": { " + coluna +"}";
 					}
 				}
 				linha += "}";
@@ -322,7 +346,13 @@ public class CYKParserGUI extends JFrame implements ActionListener{
 			}
 
 			listProcessamento.addElement("Cadeia Aceita ?");
-			listProcessamento.addElement(" " + cyk.cadeiaFoiAceita());
+			//listProcessamento.addElement(" " + cyk.cadeiaFoiAceita());
+
+			if(cyk.cadeiaFoiAceita()){
+				listProcessamento.addElement("Sim - Cadeia foi aceita!");
+			}else{
+				listProcessamento.addElement("Não - Cadeia não foi aceita!");
+			}
 
 		}catch (Exception e) {
 			// TODO: handle exception
@@ -354,5 +384,23 @@ public class CYKParserGUI extends JFrame implements ActionListener{
 		}
 	}
 
+	public ArrayList<String> resultadosToList() throws Exception{
+
+		try{
+
+			ArrayList<String> resultados = new ArrayList<String>();
+
+			for(int i=0; i<listProcessamento.getSize(); i++){
+				resultados.add(listProcessamento.getElementAt(i));
+			}
+
+			return resultados;
+
+		}catch (Exception e) {
+			// TODO: handle exception
+			throw new Exception("Erro: nao foi possivel pegar Resultados");
+		}
+
+	}
 
 }

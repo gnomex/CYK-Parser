@@ -209,6 +209,8 @@ public class CYK {
 			//Lista de regras geradoras
 			ArrayList<NaoTerminal> regras = new ArrayList<NaoTerminal>();
 
+			
+			
 			//Pesquisa em todos os estados
 			for(Estado es : estados){
 				ArrayList<Producao> prds = new ArrayList<Producao>();
@@ -224,12 +226,15 @@ public class CYK {
 				}
 			}
 			//Caso nao tenha gerador
+			/**
+			 * Essa parte do código está gerando Bug !
+			 * 
 			if(regras.isEmpty()){
 				NaoTerminal ntgerador = new NaoTerminal();
 				ntgerador.setNaoTerminais(TransacaoVazia);	 //Insere Simbolo Vazio
 				regras.add(ntgerador);
 			}
-
+			*/
 
 			ProducoesForParser pfp = new ProducoesForParser();
 			pfp.setProducoes(regras);
@@ -470,14 +475,14 @@ public class CYK {
 
 			ArrayList<String> testeEntrada = new ArrayList<String>();
 			testeEntrada.add("a");
-			testeEntrada.add("a");
 			testeEntrada.add("b");
 			testeEntrada.add("a");
 			testeEntrada.add("a");
+			testeEntrada.add("b");
 
 
 			CYK cyk = new CYK(testeEntrada);
-			cyk.loadEstadosFromFile("entrada1.txt");
+			cyk.loadEstadosFromFile("entrada.txt");
 
 			for(Estado et : cyk.getEstados()){
 				System.out.println("Terminal: " + et.getEstado().getNaoTerminais());
