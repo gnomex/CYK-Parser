@@ -57,6 +57,8 @@ public class CYKParserGUI extends JFrame implements ActionListener{
 
 	private ArrayList<String> cadeiaEntrada = new ArrayList<String>();
 
+	private JFileChooser fileChooser = new JFileChooser();
+
 	private LoadFile lf;
 	private CYK cyk;
 
@@ -187,14 +189,15 @@ public class CYKParserGUI extends JFrame implements ActionListener{
 		//botao sair
 		if(obj == btnCarregarArquivo){
 
-			JFileChooser arquivoEntrada = new JFileChooser();
+			fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			FileNameExtensionFilter filter = new FileNameExtensionFilter("Text Files", "txt");
-			arquivoEntrada.setFileFilter(filter);
-			arquivoEntrada.addChoosableFileFilter(filter);
+			fileChooser.setFileFilter(filter);
+			fileChooser.addChoosableFileFilter(filter);
 
-			int res = arquivoEntrada.showOpenDialog(null);
+
+			int res = fileChooser.showOpenDialog(null);
 			if (res == JFileChooser.APPROVE_OPTION) {
-				File dir = arquivoEntrada.getSelectedFile();
+				File dir = fileChooser.getSelectedFile();
 				currentFile = dir.getPath();
 
 				System.out.println("File: " + currentFile);
@@ -215,9 +218,12 @@ public class CYKParserGUI extends JFrame implements ActionListener{
 
 			try{
 
-				OutputFile.gravaArquivoResultados(this.resultadosToList(), "saida.txt" , true);
+				fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+				if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION){
 
-				JOptionPane.showMessageDialog(CYKParserGUI.this, "Arquivo gravado com sucesso !\n\nArquivo: saida.txt");
+					OutputFile.gravaArquivoResultados(this.resultadosToList(), fileChooser.getSelectedFile().getPath() + "/saida.txt" , true);
+				}
+
 
 				limparRecursos();
 
