@@ -43,9 +43,6 @@ public class LoadFile {
 		montaEstadoComNTerminais();
 		carregaProducoes();
 		carregaInicial();
-
-
-
 	}
 
 
@@ -62,13 +59,17 @@ public class LoadFile {
 
 		try{
 			while((linha=arquivo.readLine()) !=null){
+				//Remove Espaços em Branco
+				linha = linha.trim();
 				//Se não for linha vazia
 				if(linha.equals("Terminais")){
 
 					//Carrega os simbolos terminais até encontrar as produções
 					while((linha=arquivo.readLine()) !=null && !((linha.equals("Produções") || linha.equals("Producoes")))){
+						//Remove Espaços em Branco
+						linha = linha.trim();
 						//Se não for linha vazia
-						if(!(linha.equals(""))){
+						if(!linha.isEmpty()){
 
 							StringTokenizer st = new StringTokenizer(linha, ",");
 
@@ -113,13 +114,17 @@ public class LoadFile {
 
 		try{
 			while((linha=arquivo.readLine()) !=null){
+				//Remove Espaços em Branco
+				linha = linha.trim();
 				//Se for a linha das Produçoes
 				if((linha.equals("Produções")) || (linha.equals("Producoes"))){
 
 					//Carrega as produções até encontrar o Inicial
 					while((linha=arquivo.readLine()) !=null && !(linha.equals("Inicial"))){
+						//Remove Espaços em Branco
+						linha = linha.trim();
 						//Se não for linha vazia
-						if(!(linha.equals(""))){
+						if(!linha.isEmpty()){
 							String naoterminal;
 							String prod;
 
@@ -166,6 +171,8 @@ public class LoadFile {
 
 		try{
 			while((linha=arquivo.readLine()) !=null){
+				//Remove Espaços em Branco
+				linha = linha.trim();
 				//Se não for linha vazia
 				if(linha.equals("Inicial")){
 					linha = arquivo.readLine();
@@ -203,13 +210,17 @@ public class LoadFile {
 
 		try{
 			while((linha=arquivo.readLine()) !=null){
+				//Remove Espaços em Branco
+				linha = linha.trim();
 				//Se não for linha vazia
 				if(linha.equals("Variaveis") || linha.equals("Variáveis")){
 
 					//Carrega os não terminais até encontrar a linha de inicio dos terminais
 					while((linha=arquivo.readLine()) !=null && !(linha.equals("Terminais"))){
+						//Remove Espaços em Branco
+						linha = linha.trim();
 						//Se não for linha vazia
-						if(!(linha.equals(""))){
+						if(!linha.isEmpty()){
 
 							StringTokenizer st = new StringTokenizer(linha, ",");
 
