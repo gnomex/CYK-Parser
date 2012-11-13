@@ -7,9 +7,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
-import br.unioeste.cyk.parser.Estado;
-import br.unioeste.cyk.parser.Producao;
+import br.unioeste.grammar.Estado;
 import br.unioeste.grammar.NaoTerminal;
+import br.unioeste.grammar.Producao;
 import br.unioeste.grammar.Terminal;
 
 public class LoadFile {

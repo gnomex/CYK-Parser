@@ -2,8 +2,10 @@ package br.unioeste.cyk.parser;
 
 import java.util.ArrayList;
 
-import br.unioeste.exceptions.CYKParserCadeiaEntradaError;
+import br.unioeste.common.ProducoesForParser;
+import br.unioeste.grammar.Estado;
 import br.unioeste.grammar.NaoTerminal;
+import br.unioeste.grammar.Producao;
 import br.unioeste.loaderfiles.LoadFile;
 
 public class CYK {
@@ -38,7 +40,7 @@ public class CYK {
 		}catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
-			throw new CYKParserCadeiaEntradaError("Cadeia de entrada muito grande");
+			throw new Exception("Cadeia de entrada muito grande");
 		}
 
 		inicial = new Producao();

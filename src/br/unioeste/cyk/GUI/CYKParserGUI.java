@@ -25,11 +25,11 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JList;
 
+import br.unioeste.common.ProducoesForParser;
 import br.unioeste.cyk.parser.CYK;
-import br.unioeste.cyk.parser.Estado;
-import br.unioeste.cyk.parser.Producao;
-import br.unioeste.cyk.parser.ProducoesForParser;
+import br.unioeste.grammar.Estado;
 import br.unioeste.grammar.NaoTerminal;
+import br.unioeste.grammar.Producao;
 import br.unioeste.loaderfiles.LoadFile;
 import br.unioeste.loaderfiles.OutputFile;
 

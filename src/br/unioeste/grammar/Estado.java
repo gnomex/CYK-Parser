@@ -1,8 +1,7 @@
-package br.unioeste.cyk.parser;
+package br.unioeste.grammar;
 
 import java.util.ArrayList;
 
-import br.unioeste.grammar.NaoTerminal;
 
 public class Estado {
 	

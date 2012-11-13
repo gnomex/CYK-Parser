@@ -1,4 +1,4 @@
-package br.unioeste.cyk.parser;
+package br.unioeste.common;
 
 import java.util.ArrayList;
 
