@@ -215,7 +215,7 @@ public class CYKParserGUI extends JFrame implements ActionListener{
 
 			try{
 
-				OutputFile.gravaArquivoResultados(this.resultadosToList(), "saida.txt");
+				OutputFile.gravaArquivoResultados(this.resultadosToList(), "saida.txt" , true);
 
 				JOptionPane.showMessageDialog(CYKParserGUI.this, "Arquivo gravado com sucesso !\n\nArquivo: saida.txt");
 

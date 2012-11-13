@@ -9,15 +9,15 @@ import java.util.List;
 
 public class OutputFile {
 
-	public static void gravaArquivoResultados(List<String> resultados, String filename) {
+	public static void gravaArquivoResultados(List<String> resultados, String filename , Boolean rw) {
 
 		FileWriter writer = null;
 		PrintWriter saida = null;
 		try {
-			writer = new FileWriter(new File(filename),true);
-			saida = new PrintWriter(writer,true); 
+			writer = new FileWriter(new File(filename),rw);
+			saida = new PrintWriter(writer,rw); 
 			
-			System.out.println("Iniciando gravação do arquivo");
+			System.out.println("Iniciando gravação do arquivo em: " + filename);
 
 			for(String res : resultados){
 				saida.println(res);
@@ -51,7 +51,7 @@ public class OutputFile {
 			teste.add("a");
 			teste.add("b");
 			
-			OutputFile.gravaArquivoResultados(teste, "saida.txt");
+			OutputFile.gravaArquivoResultados(teste, "saida.txt" , true);
 		}catch (Exception e) {
 			// TODO: handle exception
 		}

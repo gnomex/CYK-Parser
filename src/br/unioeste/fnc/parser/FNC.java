@@ -9,6 +9,7 @@ import br.unioeste.grammar.NaoTerminal;
 import br.unioeste.grammar.Producao;
 import br.unioeste.grammar.Terminal;
 import br.unioeste.loaderfiles.LoadFile;
+import br.unioeste.loaderfiles.OutputFile;
 
 public class FNC {
 
@@ -23,7 +24,9 @@ public class FNC {
 
 	private ArrayList<Estado> estadosNaFNC; //Resultados do processamento
 
-	public FNC(){
+	private ParserListener listener;
+
+	public FNC( ParserListener processamentoListener ){
 		inicial = new Producao();
 		estados = new ArrayList<Estado>();
 		estadosNaFNC = new ArrayList<Estado>();
@@ -31,6 +34,8 @@ public class FNC {
 		naoTerminais = new ArrayList<NaoTerminal>();
 		terminais = new ArrayList<Terminal>();
 		terminaisZ = new ArrayList<Estado>();
+
+		listener = processamentoListener;
 	}
 
 	/**	Considerar Gramática previamente Simplificada
@@ -60,17 +65,15 @@ public class FNC {
 				for(Producao pr : estado.getProducoes()){
 
 					//Pega produção
-					//1
 					//Se for unico terminal, faz nada
-					//2
 					//Se for terminal Com não Terminal
 					//Cria produção Z
-					//3
 					//Se for apenas NaoTerminal, faz nada
 					//Adiciona resultado no array
+					listener.statusProcessamento("Processando produção: " + pr.getProducao());
 
-					System.out.println("Processando produção: " + pr.getProducao());
 					if(pr.getProducao().length() > 1){ 
+
 						Producao novaProd = new Producao(); //Cria novo elemento
 						novaProd = trasnformaTerminal(pr , "");
 
@@ -89,8 +92,9 @@ public class FNC {
 
 			}
 
-			mergeZ(novosEstados);
+			//mergeZ(novosEstados);
 
+			estadosNaFNC = novosEstados;
 
 		}catch (Exception e) {
 			// TODO: handle exception
@@ -120,8 +124,6 @@ public class FNC {
 		}catch (Exception e) {
 			// TODO: handle exception
 		}
-
-
 	}
 
 	/*	Cria produções de NaoTerminais Z para todos os terminais presentes nas produõoes 
@@ -144,12 +146,13 @@ public class FNC {
 			for(String str : testeZ){
 
 				if(!str.isEmpty()){
-					System.out.println("  -- Processando: " + str );
+					listener.statusProcessamento("  -- Processando: " + str);
 
 					NaoTerminal ntZ = new NaoTerminal();
 
 					if(isSimboloTerminal(str)){ //Se encontrou terminal
-						System.out.println("  -- -> Isterminal " );
+
+						listener.statusProcessamento("  -- -> Isterminal " );
 
 						Producao nZprod = new Producao();
 						nZprod.setProducao(str);
@@ -157,7 +160,7 @@ public class FNC {
 						//Pega regra Z
 						ntZ = criaZ(nZprod);
 
-						System.out.println(" ## " + ntZ.getNaoTerminais());
+						listener.statusProcessamento(" ## " + ntZ.getNaoTerminais());
 
 					}else{
 						ntZ.setNaoTerminais(str + "|");
@@ -170,7 +173,7 @@ public class FNC {
 			Producao prZ = new Producao();
 			prZ = concatenaNTerminaisToProd(naoTerminaisZ);
 
-			System.out.println(" Produção final do processamento: " + prZ.getProducao());
+			listener.statusProcessamento(" Produção final do processamento: " + prZ.getProducao());
 
 			return prZ;
 
@@ -238,7 +241,7 @@ public class FNC {
 						//Se existir retorna a regra Z<n>
 						if(pd.getProducao().equals(producao.getProducao())){
 
-							System.out.println(" ---> Regra Z encontrada");
+							listener.statusProcessamento(" ---> Regra Z encontrada");
 
 							return es.getEstado();
 						}
@@ -247,7 +250,7 @@ public class FNC {
 				}
 			}
 			//Se não existir cria nova regra Z<n>
-			System.out.println("  # Regra Z  NAO encontrada");
+			listener.statusProcessamento("  # Regra Z  NAO encontrada");
 
 			Estado estado = new Estado();
 
@@ -260,7 +263,7 @@ public class FNC {
 
 			this.terminaisZ.add(estado);
 
-			System.out.println("  >> Regra Z criada " + nt.getNaoTerminais());
+			listener.statusProcessamento("  >> Regra Z criada " + nt.getNaoTerminais());
 
 			return nt;
 
@@ -280,44 +283,57 @@ public class FNC {
 	 * 			A->a	{Apenas Terminal sozinho
 	 * 
 	 * 
-
-
-	public ArrayList<Estado> somente2VariaveisLadoDireito(){
-
-	}
 	 * */
 
+	public void somente2VariaveisLadoDireito() throws GrammarNotFNCFormat, Exception{
 
+		listener.statusProcessamento("  ##\n	Passo 5\n ##");
 
-	public static void main(String[] args){
+		ArrayList<Estado> estadosFinaisComZ  = new ArrayList<Estado>();
 
-		FNC fnc = new FNC();
+		for(Estado estZ : estadosNaFNC){
 
-		fnc.loadEstadosFromFile("entrada2.txt");
+			ArrayList<Producao> prodEmFNC = new ArrayList<Producao>();
 
-		try {
-			fnc.variaveisLadoDireito();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			for(Producao pdZ : estZ.getProducoes()){
+
+				listener.statusProcessamento("  Processando produção: " + pdZ.getProducao());
+
+				Producao pd = new Producao();
+				pd = trasnformaNaoTerminais(pdZ, "|");
+
+				prodEmFNC.add(pd);
+
+			}
+
+			Estado nEstado = new Estado();
+			nEstado.setEstado(estZ.getEstado());
+			nEstado.setProducoes(prodEmFNC);
+
+			estadosFinaisComZ.add(nEstado);
+
 		}
 
-		fnc.imprimeParaTeste();
-
-
+		mergeZ(estadosFinaisComZ);
+		updateTerminais();
+		imprimeResultado();
 	}
+
 
 	public Producao trasnformaNaoTerminais(Producao prod , String splitRegex) throws GrammarNotFNCFormat{
 
+
+		ArrayList<NaoTerminal> naoTerminaisZ =null;
+
 		try{
 
-			ArrayList<NaoTerminal> naoTerminaisZ = new ArrayList<NaoTerminal>();
+			naoTerminaisZ = new ArrayList<NaoTerminal>();
 
 			StringTokenizer st = new StringTokenizer(prod.getProducao() , splitRegex);
 			int stTokens = st.countTokens();
 
-			if(stTokens < 2 ){
-				if(!isSimboloTerminal(st.nextToken())){
+			if(stTokens < 2 ){//Se for menor de 2 tokens
+				if(!isSimboloTerminal(st.nextToken())){//Se nao For terminal
 
 					throw new GrammarNotFNCFormat("Error: Gramatica não válida");
 
@@ -326,60 +342,72 @@ public class FNC {
 			}
 
 			if(stTokens > 2){ //Se tiver mais de 2 tokens
-				//Apenas para Teste
-				System.out.println("  -- Processando: " + str );
 
-				NaoTerminal ntZ = new NaoTerminal();
-				Producao nZprod = new Producao();
-				nZprod.setProducao(str);
+				while(st.countTokens()>2){
 
-				//Pega regra Z
-				ntZ = criaZ(nZprod);
+					String concat = st.nextToken() + st.nextToken(); //Pega dois próximos Tokens
+					//concat = concat.replaceAll("|", "");
 
-				System.out.println(" ## " + ntZ.getNaoTerminais());
+					NaoTerminal ntZ = new NaoTerminal();
+					Producao nZprod = new Producao();
 
-				naoTerminaisZ.add(ntZ);
-				//cria nova regra Z
+					nZprod.setProducao(concat);
+
+					ntZ = criaZ(nZprod);
+
+					naoTerminaisZ.add(ntZ);
+				}
 
 			}else{
 				//Faz Nada
+				return prod;
 			}
-			Producao prZ = new Producao();
-			prZ = concatenaNTerminaisToProd(naoTerminaisZ);
 
-			System.out.println(" Produção final do processamento: " + prZ.getProducao());
-
-			return prZ;
 
 		}catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
-			throw new Exception("Erro: Nao foi possivel encontrar terminais");
 		}
 
 
+		Producao prZ = new Producao();
+		try {
+			prZ = concatenaNTerminaisToProd(naoTerminaisZ);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		System.out.println(" Produção final do processamento: " + prZ.getProducao());
+
+		return prZ;
 
 	}
 
+	/**
+	 * 	Demais Métodos
+	 * 
+	 * */
 
-
-
-
-
-	private void loadEstadosFromFile(String filename){
+	public void loadEstadosFromFile(String filename){
 
 		try {
 			LoadFile lf = new LoadFile(filename);
 			lf.carregarRecursos();
 
 			this.estados = lf.getEstados();
-			System.out.println("Estados: " + estados.size() );
+			listener.entradaProcessamento("Estados: " + estados.size());
+
 			this.inicial = lf.getInicial();
-			System.out.println("Estado Inicial: " + inicial.getProducao() );
+			listener.entradaProcessamento("Estado Inicial: " + inicial.getProducao());
+
 			this.naoTerminais = lf.getNaoTerminais();
-			System.out.println("Nao terminais: " + naoTerminais.size() );
+			listener.entradaProcessamento("Nao terminais: " + naoTerminais.size() );
+
 			this.terminais = lf.getTerminais();
-			System.out.println("terminais: " + terminais.size() );
+			listener.entradaProcessamento("terminais: " + terminais.size() );
+
+			imprimeGramaticaEntrada();
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -389,19 +417,92 @@ public class FNC {
 
 	}
 
+	private void imprimeGramaticaEntrada(){
+
+		for(Estado estado : estados){
+
+			listener.entradaProcessamento("Produção: " + estado.getEstado().getNaoTerminais());
+
+			for(Producao pr : estado.getProducoes()){
+
+				listener.entradaProcessamento("  ->" + pr.getProducao());
+
+			}
+		}
+
+	}
+
+	public void saveProcessamentoToFile(String filepath){
+
+		ArrayList<String> resultadoFNC = new ArrayList<String>();
+
+		resultadoFNC.add("Variáveis");
+		String naoTerminais = "";
+		for(NaoTerminal nt : this.naoTerminais){
+			naoTerminais = naoTerminais + nt.getNaoTerminais() +",";
+		}
+		naoTerminais = naoTerminais.replaceAll("\\|", "");
+
+		
+		resultadoFNC.add(naoTerminais);
+
+		resultadoFNC.add("Terminais");
+		String terms = "";
+		for(Terminal tr : terminais){
+			terms = terms + tr.getTerminal() + ",";
+		}
+		resultadoFNC.add(terms);
+
+		resultadoFNC.add("Produções");
+
+		for(Estado es : estadosNaFNC){
+
+			for(Producao pd : es.getProducoes()){
+				String pdes = es.getEstado().getNaoTerminais() + "->"+pd.getProducao();
+
+				pdes =	pdes.replaceAll("\\|" , "");
+
+				resultadoFNC.add(pdes);
+
+			}			
+		}
+
+		resultadoFNC.add("Inicial");
+		resultadoFNC.add(inicial.getProducao());
+
+		OutputFile.gravaArquivoResultados(resultadoFNC, filepath + "/saidaFNC.txt" , false);
+
+		listener.statusProcessamento("Arquivo salvo em: " + filepath + "/saidaFNC.txt" );
+
+	}
+
+
+	private void updateTerminais(){
+
+		ArrayList<NaoTerminal> novosNaoTermianais = new ArrayList<NaoTerminal>();
+
+		for(Estado est : estadosNaFNC){
+			novosNaoTermianais.add(est.getEstado());
+		}
+
+		naoTerminais = novosNaoTermianais;
+
+	}
+
 
 	/**	Demais Setters and Getters
 	 * ========================================================================
 	 * */
 
-	public void imprimeParaTeste(){
+	public void imprimeResultado(){
 
 		for(Estado es : estadosNaFNC){
 
-			System.out.println("Estado : " + es.getEstado().getNaoTerminais());
+			listener.resultadoProcessamento("Estado : " + es.getEstado().getNaoTerminais());
+
 
 			for(Producao pd : es.getProducoes()){
-				System.out.println(" -> : " + pd.getProducao());
+				listener.resultadoProcessamento(" -> : " + pd.getProducao());
 			}
 
 		}

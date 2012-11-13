@@ -37,18 +37,18 @@ public class LoadFile {
 	}
 
 	public void carregarRecursos() throws Exception{
-		
+
 		carregaNaoTerminais();
 		carregaTerminais();
 		montaEstadoComNTerminais();
 		carregaProducoes();
 		carregaInicial();
-		
-		
-		
+
+
+
 	}
-	
-	
+
+
 	public void carregaTerminais() throws IOException{
 		try{
 			arquivo = new BufferedReader(new FileReader(pathFilename));
@@ -73,9 +73,15 @@ public class LoadFile {
 							StringTokenizer st = new StringTokenizer(linha, ",");
 
 							while(st.hasMoreTokens()){
-								Terminal term = new Terminal();
-								term.setTerminal(st.nextToken());
-								terminais.add(term);
+
+								String token = st.nextToken();
+
+								if(!token.isEmpty()){
+									Terminal term = new Terminal();
+									term.setTerminal(token);
+									terminais.add(term);	
+								}
+
 							}
 						}
 					}
@@ -119,7 +125,7 @@ public class LoadFile {
 
 							naoterminal = linha.substring(0, linha.indexOf("-")); //Pega simbolo inicial
 							prod = linha.substring(linha.indexOf(">") + 1, linha.length()); //Pega produçoes
-							
+
 							System.out.println("NaoTerminal: " + naoterminal + " Producao: "+ prod);
 
 							Producao pr = new Producao();
@@ -208,9 +214,14 @@ public class LoadFile {
 							StringTokenizer st = new StringTokenizer(linha, ",");
 
 							while(st.hasMoreTokens()){
-								NaoTerminal nTerm = new NaoTerminal();
-								nTerm.setNaoTerminais(st.nextToken());
-								naoTerminais.add(nTerm);
+								String token = st.nextToken();
+
+								if(!token.isEmpty()){
+
+									NaoTerminal nTerm = new NaoTerminal();
+									nTerm.setNaoTerminais(token);
+									naoTerminais.add(nTerm);
+								}
 							}
 						}
 					}
@@ -230,14 +241,14 @@ public class LoadFile {
 	//Inicializa os Estados com os terminais carregados
 	public void montaEstadoComNTerminais(){
 		try{
-			
+
 			for(NaoTerminal nt : naoTerminais){
 				Estado nEstado = new Estado();
 				nEstado.setEstado(nt);
-				
+
 				estados.add(nEstado);
 			}
-		
+
 		}catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
@@ -247,19 +258,19 @@ public class LoadFile {
 	public void insereProducao(String naoTerminal, Producao producao){
 
 		try{
-			
+
 			ArrayList<Estado> updEstados = new ArrayList<Estado>();
-			
+
 			for(Estado es : estados){
 				if(es.getEstado().getNaoTerminais().equals(naoTerminal)){
-					
+
 					es.addProducao(producao);
 				}
 				updEstados.add(es);
 			}
 			estados.clear();
 			estados = updEstados;
-			
+
 		}catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
@@ -295,18 +306,18 @@ public class LoadFile {
 
 	public static void main(String[] args){
 		try{
-			
+
 			LoadFile input = new LoadFile("entrada.txt");
 			input.carregarRecursos();
-			
+
 			ArrayList<Estado> estados = new ArrayList<Estado>();
 			estados = input.getEstados();
-			
+
 			System.out.println("\n##\n ");
-			
+
 			for(Estado es : estados){
 				System.out.println("Estado: " + es.getEstado().getNaoTerminais());
-				
+
 				ArrayList<Producao> prds = new ArrayList<Producao>();
 				prds = es.getProducoes();
 				System.out.println("Produçoes: "+ prds.size());
@@ -314,7 +325,7 @@ public class LoadFile {
 					System.out.println("  -> " + prod.getProducao());
 				}
 			}
-			
+
 			System.out.println("Simbolo Inicial: " + input.getInicial().getProducao());
 
 		}catch (FileNotFoundException e) {
